@@ -1,0 +1,90 @@
+Name: processor_core_base_freq
+Formula: PAPI_REF_CYC / PAPI_REF_NS
+Description: Nominal processor core frequency before TurboBoost, in GHz
+Notes: May be used to verify or determine the processor base frequency. Larger values are usually better.
+
+Name: double_precision_FLOP_rate
+Formula: (PAPI_DP_OPS + PAPI_FDV_INS) / PAPI_REF_NS
+Description: Double precision floating-point performance, in gigaflops/second
+Notes: Computes the floating-point performance, in double precision floating-point operations per second. Larger values are usually better.
+
+Name: computational_intensity
+Formula: PAPI_TOT_CYC / PAPI_TOT_INS
+Description: Core instruction retirement rate, in cycles per instruction
+Notes: Computes the number of instructions retired per accelerated processor clock. The Intel Architecture is able to issue and retire up to 4 instructions per processor clock period, so the smallest this value can be is 0.25. In the other extreme, a program that is constantly stalled waiting for memory can see this value in the hundreds. Smaller values are usually better.
+
+Name: processor_turbo_rate
+Formula: PAPI_TOT_CYC / PAPI_REF_CYC
+Description: Performance increase due to TurboBoost
+Notes: Intel processors support increasing the clock frequency to improve performance, as long as doing so remains within the required thermal envelope. Vector floating-point instructions tend to push the thermal envelope, while memory and other instructions tend to cool the processor. The increased clock frequency is reflected in the total number of elapsed cycles, while the nominal frequency is reflected in the reference cycles. The ratio of these two values gives the percentage of clock improvement. Larger values are usually better.
+
+Name: processor_turbo_freq
+Formula: PAPI_TOT_CYC / PAPI_REF_NS
+Description: Accelerated processor core frequency due to TurboBoost, in GHz
+Notes: Intel processors support increasing the clock frequency to improve performance, as long as doing so remains within the required thermal envelope. Vector floating-point instructions tend to push the thermal envelope, while memory and other instructions tend to cool the processor. The increased clock frequency is reflected in the total number of elapsed cycles, while the nominal frequency is reflected in the reference cycles. The ratio of total cycles to reference nanoseconds gives the effective processor clock frequency. Larger values are usually better.  
+
+Name: ratio_of_load_instruct
+Formula: PAPI_LD_INS / PAPI_TOT_INS
+Description: Ratio of load instructions to all instructions
+Notes: Measures the ratio of load instructions to all instructions in the measured range.  Instructions that move memory, load and store instructions, are often viewed as a necessary expense to set up a computation rather than useful work. They are also expensive in that they require anywhere from 3 clocks for an L1 cache hit, to many hundreds of clocks to load data from remote memory. This metric gives an indication of how intensely the memory hierarchy is used. Smaller values are usually better, but higher values are not necessarily bad. If the CPI is high and this ratio is also high, then performance may be limited by the many references to memory.
+
+Name: time_per_load_instruct
+Formula: PAPI_REF_NS / PAPI_LD_INS
+Alternate: PAPI_TOT_CYC / PAPI_LD_INS
+Description: Time in nanoseconds per load instruction
+Notes: Measures the time between load instructions. Instructions that move memory, load and store instructions, are often viewed as a necessary expense to set up a computation rather than useful work. They are also expensive in that they require anywhere from 3 clocks for an L1 cache hit, to many hundreds of clocks to load data from remote memory. This metric gives an indication of how intensely the memory hierarchy is used. Smaller values are usually better, but higher values are not necessarily bad. If the CPI is high and this ratio is also high, then performance may be limited by the many references to memory.
+
+Name: vectorization_rate
+Formula: PAPI_VEC_DP / (PAPI_DP_OPS + PAPI_FDV_OPS)
+Description: Floating-point vectorization rate
+Notes: Measures the fraction of floating-point instructions that are vector instructions.  Vector instructions are generally faster than scalar instructions, so a higher percentage of vector instructions is generally desirable. However, it is also worth noting that the effectiveness of vectorization depends on how effectively the data can be kept near the processor. Vector operations when data is in registers and L1 cache show significantly higher performance than similar scalar operations. On the other hand, when data is in memory, vector operations show no advantage over similar scalar operations.
+
+Name: ratio_of_float_instructions
+Formula: PAPI_DP_OPS / PAPI_TOT_INS
+Description: Ratio of floating-point instructions to all instructions
+Notes: Programs generally consist of instructions that do the intended work, instructions that set up the work, and control instructions. For many programs, floating-point instructions do the desired work, while instructions are considered overhead. High FLOP rates can only be achieved when many of the instructions executed are floating-point instructions. So, larger values are usually better.  
+
+Name: float_point_intensity
+Formula: PAPI_DP_OPS / PAPI_LD_INS
+Description: Floating-point operations per load instruction
+Notes: Programs generally consist of instructions that do the intended work and other instructions, overhead, that set up the work to be done. While there are several types of overhead, data movement is potentially the most expensive. Loading data from a random location in memory can take many hundreds of clock cycles, compared to a floating-point operation that takes only a few. For best performance, there should be many operations per load, and data should be close, so larger values are usually better. Something to be aware of, though, is that load instructions may bring in anything from a single byte to a vector of several words, and that is not reflected in the number of load instructions. But since actual data movement is in units of cache lines, this may be less of a problem than it might appear to be.
+
+Name: mem_hits_per_load
+Formula: PAPI_L3_TCM / PAPI_LD_INS
+Description: Cache lines read from memory per load instruction
+Notes: Load operations from memory are expensive. A typical memory load takes 80 to 95 nanoseconds, or about 200 to 250 processor clocks. High memory hits per load, coupled with high CPI values and a high ratio of loads per instruction, indicate the number of memory references may limit performance. Fewer memory hits are usually better.
+
+Name: mem_hits_per_instruct
+Formula: PAPI_L3_TCM / PAPI_TOT_INS
+Description: Cache lines read from memory per instruction
+Notes: Load operations from memory are expensive. A typical random memory load takes 80 to 95 nanoseconds, or about 200 to 250 processor clocks. A typical strided load may take about 10 nanoseconds, because the prefetch engine starts the load before it is actually requested. Either way it takes relatively few memory hits before memory speed dominates program performance. As such, smaller values for this metric are usually better.
+
+Name: L3_cache_hits
+Formula: PAPI_L2_TCM - PAPI_L3_TCM
+Description: Cache line requests satisfied in L3 cache
+Notes: L3 cache hits are generally expensive, about 17.5 ns, or 45 clocks, per hit, though much less expensive than hits to memory. This metric indicates the number of cache lines loaded from L3 cache. Smaller values are usually better.  
+
+Name: L3_cache_hits_per_load
+Formula: (PAPI_L2_TCM - PAPI_L3_TCM) / PAPI_LD_INS
+Description: Cache lines read from L3 cache per load instruction
+Notes: Load operations from L3 cache are expensive, although less expensive than memory. A typical random L3 cache load takes 15 to 18 nanoseconds, or about 38 to 45 processor clocks. Strided loads take closer to 7 nanoseconds. High L3 hits per load, coupled with high CPI values or high loads per instruction, indicate the number of L3 cache references may limit performance. Fewer L3 hits are usually better.
+
+Name: L3_cache_hits_per_instruct
+Formula: (PAPI_L2_TCM - PAPI_L3_TCM) / PAPI_TOT_INS
+Description: Cache lines read from L3 cache per instruction
+Notes: Load operations from L3 cache are expensive, although less expensive than memory. A typical random L3 cache load takes 15 to 18 nanoseconds, or about 38 to 45 processor clocks. Strided loads take closer to 7 nanoseconds. High L3 hits per instruction indicate the number of L3 cache references may limit performance. Fewer L3 hits are usually better.
+
+Name: L2_cache_hits
+Formula: PAPI_L1_TCM - PAPI_L2_TCM
+Description: Cache line requests satisfied in L2 cache
+Notes: L2 cache hits are moderately inexpensive, about 4.65 ns, or 12 to 15 clocks, per hit. This metric indicates the number of cache lines loaded from L2 cache.
+
+Name: L2_cache_hits_per_load
+Formula: (PAPI_L1_TCM - PAPI_L2_TCM) / PAPI_LD_INS
+Description: Cache lines read from L2 cache per load instruction
+Notes: Load operations from L2 cache are moderately inexpensive. A typical random L2 cache load takes 4.65 nanoseconds, or about 12 to 15 processor clocks. Strided loads take closer to 3.5 nanoseconds. High L2 hits per load, coupled with high CPI values or high loads per instruction, indicate the number of L2 cache references may limit performance.
+
+Name: L2_cache_hits_per_instruct
+Formula: (PAPI_L1_TCM - PAPI_L2_TCM) / PAPI_TOT_INS
+Description: Cache lines read from L2 cache per instruction
+Notes: Load operations from L2 cache are moderately inexpensive. A typical random L2 cache load takes 4.65 nanoseconds, or about 12 to 15 processor clocks. Strided loads take closer to 3.5 nanoseconds. High L2 hits per instruction indicate the number of L2 cache references may limit performance.

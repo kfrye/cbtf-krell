@@ -8,11 +8,14 @@ import cbtfpapi
 import csv 
 import re
 import ast
+import os
+import sys
+import textwrap
 
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Examine cbtf CSV report data')
-    parser.add_argument('location', help='location of the csv report file')
+    parser.add_argument('location', nargs='?', help='location of the csv report file')
     parser.add_argument('--io', action='store_true', help='io details')
     parser.add_argument('--memory', action='store_true', help='memory details')
     parser.add_argument('--papi', action='store_true', help='papi details')
@@ -20,7 +23,35 @@ def parse_args():
     parser.add_argument('--rusage', action='store_true', help='rusage details')
     parser.add_argument('--mpi', action='store_true', help='mpi details')
     parser.add_argument('--ompt', action='store_true', help='omp details')
+    parser.add_argument('--info', help='Get info about a measurement or calculation')
     return parser.parse_args()
+
+
+class Info:
+    ''' Class for holding information about measures and calculations'''
+    def __init__(self, name_line):
+        self.name = name_line.split(':')[-1].strip()
+        self.units = ''
+        self.description = ''
+        self.notes = ''
+        self.formula = ''
+
+    def set_units(self, units_line):
+        self.units = units_line
+
+    def set_description(self, desc_line):
+        self.description = '\n'.join(textwrap.wrap(desc_line, 75))
+   
+    def set_notes(self, notes_line):
+        self.notes = '\n'.join(textwrap.wrap(notes_line, 75))
+ 
+    def set_formula(self, formula_line):
+        self.formula = formula_line
+
+    def __str__(self):
+        attr_list = [self.units, self.formula, self.description, self.notes]
+        attr_list = [x for x in attr_list if x != '']
+        return '\n'.join(['Name: ' + self.name] + attr_list)
 
 
 class Data_record:
@@ -139,9 +170,54 @@ def io_percent(thread_record):
     values = [x[0]/x[1] for x in zip(io_time, total_time)]
     print_results('io_percent', values)
 
+
+def retrieve_info(measure):
+    info_dict = {}
+    found = False
+    with open(os.path.join(sys.path[0], 'papi.txt'), 'r') as f:
+        line = f.readline().strip()
+        while line:
+            if line.strip() == '':
+                line = f.readline()
+                continue
+            item = Info(line.strip())
+            item.set_units(f.readline().strip())
+            item.set_description(f.readline().strip())
+            item.set_notes(f.readline().strip())
+            info_dict[item.name] = item
+            if item.name == measure:
+                found = True
+                break
+            line = f.readline()
+    if not found:
+        with open(os.path.join(sys.path[0], 'formulas.txt'), 'r') as f:
+            line = f.readline().strip()
+            while line:
+                if line.strip() == '':
+                    line = f.readline()
+                    continue
+                item = Info(line.strip())
+                item.set_formula(f.readline().strip())
+                item.set_description(f.readline().strip())
+                item.set_notes(f.readline().strip())
+                info_dict[item.name] = item
+                if item.name == measure:
+                    found = True
+                    break
+                line = f.readline()
+    if not found:
+        print('Could not find item: ' + measure)
+        exit(1)
+    print(str(info_dict[measure]))
+
  
 ##### Script starts here #####
 args = parse_args()
+
+if args.info:
+    retrieve_info(args.info)
+    exit(0)
+
 csv_record = Data_record(args.location)
 
 # Always print summary details

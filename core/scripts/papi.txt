@@ -1,0 +1,254 @@
+Name: PAPI_BR_CN
+Units: Instructions
+Description: Conditional branch instructions
+Notes: Counts the total number of conditional branch instructions retired, including those from if, for, while, and switch constructs.
+
+Name: PAPI_BR_INS
+Units: Instructions
+Description: Branch instructions
+Notes: Counts the total number of branch instructions retired, including conditional branches, unconditional branches, subroutine calls and subroutine exits.
+
+Name: PAPI_BR_MSP
+Units: Instructions
+Description: Conditional branch instructions mispredicted
+Notes: Counts the total number of conditional branch instructions that were mispredicted.  When a processor core encounters a conditional branch instruction, it guesses which direction the branch will take and speculatively executes along that branch. If the guess is correct, the core has saved time by overlapping instructions along the branch with the time required to evaluate the condition. If the guess is wrong, though, the core must undo anything it has done along the wrong branch and begin to execute along the correct branch. This event counts the guesses that are wrong.
+
+Name: PAPI_BR_NTK
+Units: Instructions
+Description: Conditional branch instructions not taken
+Notes: Counts the number of conditional branches not taken. When a processor core encounters a conditional branch, it has a choice of either taking the branch or falling through to the next instruction. This event counts the number of conditional branches that fall through to the next instruction.  
+
+Name: PAPI_BR_PRC
+Units: Instructions
+Description: Conditional branch instructions correctly predicted
+Notes: Counts the total number of conditional branch instructions that were mispredicted.  When a processor core encounters a conditional branch instruction, it guesses which direction the branch will take and speculatively executes along that branch.  If the guess is correct, the core has saved time by overlapping instructions along the branch with the time required to evaluate the condition. If the guess is wrong, though, the core must undo anything it has done along the wrong branch and begin to execute along the correct branch. This event counts the guesses that are right.
+
+Name: PAPI_BR_TKN
+Units: Instructions
+Description: Conditional branch instructions taken
+Notes: Counts the number of conditional branches taken. When a processor core encounters a conditional branch, it has a choice of either taking the branch or falling through to the next instruction. This event counts the number of conditional branches that do not fall through to the next instruction.  
+
+Name: PAPI_BR_UCN
+Units: Instructions
+Description: Unconditional branch instructions
+Notes: Counts the number of unconditional branches executed. Unconditional branches include subroutine calls and exits, and the branches at the bottom of loops and that separate else clauses in conditional constructs.  
+
+Name: PAPI_DP_OPS
+Units: Double precision floating-point operations
+Description: Floating point operations; optimized to count scaled double precision vector operations
+Notes: Counts all double precision addition and multiplication floating-point operations, whether from scalar or vector instructions. It does not include division operations.  
+
+Name: PAPI_FDV_INS
+Units: Floating-point division instructions
+Description: Floating point divide operations
+Notes: Counts all floating-point division operations, whether single or double precision.
+
+Name: PAPI_FP_INS
+Units: Floating-point instructions
+Description: Floating point instructions
+Notes: Counts all single precision and double precision scalar operations, but not vector operations. Note that for scalar instructions, instructions and operations are the same thing. Note also that this event gives the same results as PAPI_FP_OPS.  
+
+Name: PAPI_FP_OPS
+Units: Floating-point operations
+Description: Floating point operations
+Notes: Counts all single precision and double precision scalar operations, but not vector operations. Note that for scalar instructions, instructions and operations are the same thing. Note also that this event gives the same results as PAPI_FP_INS.  
+
+Name: PAPI_L1_DCM
+Units: 64-byte cache lines
+Description: Level 1 data cache misses
+Notes: Counts the number of accesses that miss, causing a 64-byte cache line to be read into the L1 data cache. Accesses include both load and store operations. Thus a program with stride-one access and data not in the L1 cache will have one data cache miss out of eight 8-byte load operations it performs. Note that this event gives very similar results as PAPI_L2_DCA.
+
+Name: PAPI_L1_ICM
+Units: 64-byte cache lines
+Description: Level 1 instruction cache misses
+Notes: Counts the number of instructions that miss, causing a 64-byte cache line to be read into the L1 instruction cache.
+
+Name: PAPI_L1_LDM
+Units: 64-byte cache lines
+Description: Level 1 load misses
+Notes: Counts the number of load operations that miss the L1 cache. Each load miss causes a 64-byte cache line to be read-in to the L1 data cache.
+
+Name: PAPI_L1_STM
+Units: 64-byte cache lines
+Description: Level 1 store misses
+Notes: Counts the number of store operations that miss the L1 cache. A cache store miss causes a 64-byte cache line to be read-in to the cache, then modified by the store operation, before the operation completes.  
+
+Name: PAPI_L1_TCM
+Units: 64-byte cache lines
+Description: Level 1 cache misses
+Notes: Counts all misses, including all loads and stores, to the L1 data and instruction caches. Note that this event should give results that are very similar to PAPI_L2_TCA.
+
+Name: PAPI_L2_DCA
+Units: 64-byte cache lines
+Description: Level 2 data cache accesses
+Notes: Counts all accesses, including all loads and stores, to the L2 cache. (Intel uses a unified L2 data/instruction cache.) This includes all accesses whether they hit or miss the cache. Note that this event gives results that are very similar to PAPI_L1_DCM.
+
+Name: PAPI_L2_DCH
+Units: 64-byte cache lines
+Description: Level 2 data cache hits
+Notes: Counts the number of hits to the L2 cache. (Intel uses a unified L2 data/instruction cache.) Each hit results from an L1 miss and causes a 64-byte cache line to be copied from L2 to the L1 data cache. Any subsequent references to that data will be satisfied from L1 until it is flushed from the L1 cache. Data copied to L1 may cause a cache line to be evicted from L1, which may then be stored in L2, causing an eviction to L3, which may, in turn, cause an L3 eviction to memory.
+
+Name: PAPI_L2_DCM
+Units: 64-byte cache lines
+Description: Level 2 data cache misses
+Notes: Counts the number of misses to the L2 cache. (Intel uses a unified L2 data/instruction cache.) Each miss causes a 64-byte cache line from L3 cache or from memory. Each L2 miss ultimately results from an L1 miss, so the cache line is copied into L1 cache. Intel uses a non-exclusive cache design, so the cache line may or may not reside in more than one level of cache at any time. Note that this event gives very similar results as PAPI_L3_DCA.
+
+Name: PAPI_L2_DCR
+Units: 64-byte cache lines
+Description: Level 2 data cache reads
+Notes: Counts the number of reads to the L2 cache. (Intel uses a unified L2 data/instruction cache.) L2 cache reads result from L1 cache misses, so each read results in a 64-byte cache line being written to the L1 cache. If the cache line resides in L2 cache, it is copied from L2 to L1. If it does not, it is brought in from L3 or from memory.
+
+Name: PAPI_L2_DCW
+Units: 64-byte cache lines
+Description: Level 2 data cache writes
+Notes: Counts the number of L2 cache writes, whether or not the data actually resides in L2 cache. In a write-back cache configuration, which is most common, temporal write operations cause a cache line read to L1, if needed, followed by an update to the cache line using the written data. Afterwards, the modified cache line resides in L1. However, introducing a new cache line to L1 may evict a cache line to L2.  This is the source of L2 cache writes. An L2 cache write may also cause a cache line to be evicted to L3, and subsequently an L3 cache line may be evicted to memory. Note that Intel uses a unified L2 data/instruction cache design, so this event will give very similar results to PAPI_L2_TCW.
+
+Name: PAPI_L2_ICA
+Units: 64-byte cache lines
+Description: Level 2 instruction cache accesses
+Notes: Counts the number of L2 accesses that result from instruction fetches. An instruction access results from an L1 instruction cache miss, and causes a 64-byte cache line to be copied to the L1 instruction cache.  
+
+Name: PAPI_L2_ICH
+Units: 64-byte cache lines
+Description: Level 2 instruction cache hits
+Notes: Counts the number of L2 hits that result from instruction fetches. An instruction hit results from an L1 instruction cache miss, and causes a 64-byte cache line to be copied from L2 to the L1 instruction cache.  
+
+Name: PAPI_L2_ICM
+Units: 64-byte cache lines
+Description: Level 2 instruction cache misses
+Notes: Counts the number of L2 misses that result from instruction fetches. An instruction miss results from an L1 instruction cache miss, and causes a 64-byte cache line to be copied from L3 or from memory.
+
+Name: PAPI_L2_ICR
+Units: 64-byte cache lines
+Description: Level 2 instruction cache reads
+Notes: Counts the number of L2 reads that result from instruction fetches. An instruction read results from an instruction fetch that misses the L1 instruction cache. If the cache line resides in L2, it is copied to the L1 instruction cache. If it does not, it is copied to L1 from L3 or memory.  
+
+Name: PAPI_L2_STM
+Units: 64-byte cache lines
+Description: Level 2 store misses
+Notes: Counts the number of store operations that miss the L2 cache. L2 store operations that miss have also missed the L1 cache, and the cache line must be copied to L1 from L3 or memory.
+
+Name: PAPI_L2_TCA
+Units: 64-byte cache lines
+Description: Level 2 total cache accesses
+Notes: Counts the number of total accesses to L2 cache. Accesses include both load and store operations, whether or not the data resides in cache at the time. L2 accesses generally result from L1 cache misses, and often result in data being copied to L1 cache. However, the use of non-temporal loads and stores can cause data to be accessed in L2 without being copied to L1. Note that this event should give very similar results as PAPI_L1_DCM.
+
+Name: PAPI_L2_TCM
+Units: 64-byte cache lines
+Description: Level 2 total cache misses
+Notes: Counts the number of misses, both loads and stores, to L2 cache. L2 misses are the result of L1 misses, and generally result in data being copied from L3 or memory to L1 cache. An L1 miss can be from either L1 data cache or L1 instruction cache. Note that this event should give very similar results as PAPI_L3_TCA.
+
+Name: PAPI_L2_TCR
+Units: 64-byte cache lines
+Description: Level 2 total cache reads
+Notes: Counts the total number of L2 cache reads, whether or not the data actually resides in L2 cache. L2 reads are the result of an L1 read miss, and result in a 64-byte cache line being sent to L1 cache.
+
+Name: PAPI_L2_TCW
+Units: 64-byte cache lines
+Description: Level 2 total cache writes
+Notes: Counts the total number of L2 cache writes, whether or not the data actually resides in L2 cache. In a write-back cache configuration, which is most common, temporal write operations cause a cache line read to L1 followed by an update to the cache line using the written data. Afterwards, the modified cache line resides in L1. However, introducing a new cache line to L1 may evict a cache line to L2. An L2 cache write may also cause a cache line to be evicted to L3, and subsequently an L3 cache line may be evicted to memory. Note that Intel uses a unified L2 data/instruction cache design, so this event will give very similar results to PAPI_L2_DCW.
+
+Name: PAPI_L3_DCA
+Units: 64-byte cache lines
+Description: Level 3 data cache accesses
+Notes: Counts all accesses, including all loads and stores, to the L3 cache. (Intel uses a unified L3 data/instruction cache.) This includes all access whether they hit or miss the cache. Note that this event often gives very similar results to PAPI_L2_TCM, because an L3 access rarely occurs without an L2 miss.  
+
+Name: PAPI_L3_DCR
+Units: 64-byte cache lines
+Description: Level 3 data cache reads
+Notes: Counts the number of reads to the L3 cache. (Intel uses a unified L3 data/instruction cache.) L3 cache reads result from L2 cache misses, so each read results in a 64-byte cache line being written to the L2 cache. If the cache line resides in L3 cache, it is copied from L3 to L2. If it does not, it is brought in from memory.
+
+Name: PAPI_L3_DCW
+Units: 64-byte cache lines
+Description: Level 3 data cache writes
+Notes: Counts the total number of L3 cache writes, whether or not the data actually resides in L3 cache. In a write-back cache configuration, which is most common, temporal write operations cause a cache line read to L1 followed by an update to the cache line using the written data. Afterwards, the modified cache line resides in L1. However, introducing a new cache line to L1 may evict a cache line to L2, which may also cause a cache line to be evicted to L3, and subsequently an L3 cache line may be evicted to memory. Note that Intel uses a unified L3 data/instruction cache design, so this event will give very similar results to PAPI_L3_TCW.
+
+Name: PAPI_L3_ICA
+Units: 64-byte cache lines
+Description: Level 3 instruction cache accesses
+Notes: Counts the number of L3 accesses that result from instruction fetches. An instruction access results from an L2 instruction read miss, and causes a 64-byte cache line to be copied to the L1 instruction cache.  
+
+Name: PAPI_L3_ICR
+Units: 64-byte cache lines
+Description: Level 3 instruction cache reads
+Notes: Counts the number of L3 reads that result from instruction fetches. An instruction read results from an instruction fetch that misses the L2 instruction cache. If the cache line resides in L3, it is copied to the L1 instruction cache. If it does not, it is copied from memory.
+
+Name: PAPI_L3_TCA
+Units: 64-byte cache lines
+Description: Level 3 total cache accesses
+Notes: Counts the number of total accesses to L3 cache. Accesses include both load and store operations, whether or not the data resides in cache at the time. L3 accesses generally result from L2 cache misses, and often result in data being copied to L1 cache. However, the use of non-temporal loads and stores can cause data to be accessed in L3 without being copied to L1. Note that this event should give very similar results as PAPI_L2_TCM.
+
+Name: PAPI_L3_TCM
+Units: 64-byte cache lines
+Description: Level 3 total cache misses
+Notes: Counts the number of misses, both loads and stores, to L3 cache. L3 misses are the result of L1 and L2 misses, and generally result in data being copied from memory to L1 cache. An L1 miss can be from either L1 data cache or L1 instruction cache. Note that this event indicates that memory was read, although it gives no indication whether it was local or remote memory.
+
+Name: PAPI_L3_TCR
+Units: 64-byte cache lines
+Description: Level 3 total cache reads
+Notes: Counts the total number of L3 cache reads, whether or not the data actually resides in L3 cache. L3 reads are the result of an L1 and L2 read miss, and result in a 64-byte cache line being sent to L1 cache.  
+
+Name: PAPI_L3_TCW
+Units: 64-byte cache lines
+Description: Level 3 total cache writes
+Notes: Counts the total number of L3 cache writes, whether or not the data actually resides in L3 cache. In a write-back cache configuration, which is most common, temporal write operations cause a cache line read to L1 followed by an update to the cache line using the written data. Afterwards, the modified cache line resides in L1. However, introducing a new cache line to L1 may evict a cache line to L2, which may also cause a cache line to be evicted to L3, and subsequently an L3 cache line may be evicted to memory. Note that Intel uses a unified L3 data/instruction cache design, so this event will give very similar results to PAPI_L3_DCW.
+
+Name: PAPI_LD_INS
+Units: Instructions
+Description: Load instructions
+Notes: Counts the number of load instructions executed. Note that this is the number of instructions and not the number of operands fetched, so a vector load represents a single event even though it may fetch up to four operands.
+
+Name: PAPI_REF_CYC
+Units: Processor core clock cycles
+Description: Reference clock cycles
+Notes: Counts the number of processor core base clock cycles, also known as the core reference cycles. This reflects the nominal frequency of the core before any TurboBoost acceleration takes place. It remains constant even when clock acceleration takes place. It does not require an actual event counter, but comes from the Time Stamp Counter. This value is obtained by calling PAPI_get_real_cyc().
+
+Name: PAPI_REF_NS
+Units: Nanoseconds
+Description: Reference nanoseconds
+Notes: Counts the number of nanoseconds that transpires. Like the PAPI_REF_CYC counter, it does not require an event counter but comes from the Time Stamp Counter instead. This value is obtained by calling PAPI_get_real_nsec().  
+
+Name: PAPI_SP_OPS
+Units: Single precision floating-point operations
+Description: Floating point operations; optimized to count scaled single precision vector operations
+Notes: Counts all single precision addition and multiplication floating-point operations, whether from scalar or vector instructions. It does not include division operations. 
+ 
+Name: PAPI_SR_INS
+Units: Instructions
+Description: Store instructions
+Notes: Counts the number of store instructions executed. Note that this is the number of instructions and not the number of operands stored, so a vector store represents a single event even though it may store up to four operands.  
+
+Name: PAPI_STL_ICY
+Units: Processor core clock cycles
+Description: Cycles with no instruction issue
+Notes: Counts the number of processor core clock cycles that were stalled, that is, no new instructions could be issued because of either resource conflicts within the ALUs or the next instruction block was pending arrival from memory or cache.  
+
+Name: PAPI_TLB_DM
+Units: Instructions
+Description: Data translation lookaside buffer misses
+Notes: Counts the number of instructions that caused Data Translation Look-Aside Buffer (DTLB) misses. The TLB caches physical address ranges and speeds up the process of converting a virtual address to a physical address. TLB misses increase the latency of fetching or storing data to memory.
+
+Name: PAPI_TLB_IM
+Units: Instructions
+Description: Instruction translation lookaside buffer misses
+Notes: Counts the number of instructions that caused Translation Look-Aside Buffer (TLB) misses when fetching the instructions from memory. The TLB caches physical address ranges and speeds up the process of converting a virtual address to a physical address. TLB misses increase the latency of fetching or storing data to memory.
+
+Name: PAPI_TOT_CYC
+Units: Processor core clock cycles
+Description: Total cycles
+Notes: Counts the total number of processor core clock cycles completed. This count includes the additional cycles that occur when the clock frequency is increased through TurboBoost.
+
+Name: PAPI_TOT_INS
+Units: Instructions
+Description: Instructions completed
+Notes: Counts the total number of instructions retired. This includes all types of instructions, such as floating-point and integer instructions, branch instructions, etc.
+
+Name: PAPI_VEC_DP
+Units: Double precision vector floating-point operations
+Description: Double precision vector/SIMD instructions
+Notes: Counts the total number of double precision vector floating-point operations (not instructions) executed. In purely vector codes, PAPI_VEC_DP and PAPI_DP_OPS give similar values.
+
+Name: PAPI_VEC_SP
+Units: Single precision vector floating-point operations
+Description: Single precision vector/SIMD instructions
+Notes: Counts the total number of single precision vector floating-point operations (not instructions) executed. In purely vector codes, PAPI_VEC_SP and PAPI_SP_OPS give similar values.

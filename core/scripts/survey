@@ -1,0 +1,135 @@
+#!/usr/bin/env python
+from __future__ import print_function
+import argparse
+import os
+import glob
+import subprocess
+import shutil
+
+def setup_offline():
+    # According to OSS documentation the published method to set and alternative
+    # location for rawdata files (eg. for lustre) is via OPENSS_RAWDATA_DIR.
+    # Therefore we honor that naming convention and convert as needed to
+    # CBTF_RAWDATA_DIR for the internal implementation used in cbtf-krell code.
+    #
+    # NOTE: Always place rawdata files into a subdirectory named offline-cbtf
+    # in case user choses a common location like current working directory,
+    # home directory, or such.
+    #
+    rawdata_dir = os.environ.get('OPENSS_RAWDATA_DIR')
+    user = os.environ.get('USER')
+    if not rawdata_dir:
+        rawdata_dir = '/tmp/' + user + '/offline-cbtf' 
+        os.environ['OPENSS_RAWDATA_DIR'] = rawdata_dir
+    if not os.path.exists(rawdata_dir):
+        os.mkdir(rawdata_dir) 
+
+    # For safety we cd to the raw directory and only remove the sub-directories
+    # each collector creates for the rawddata files.
+    # For the cbtf-krell offline collectors, we likely do no need the extra level
+    # of one directory per process/thread since we write only one file now with
+    # the naming convention: exe_name-pid-posix_tid.openss-data
+    #
+    for f in glob.glob(rawdata_dir + '/cbtf-rawdata*'):
+        os.remove(f)
+
+    # The cbtf-krell collectors internally use the CBTF_RAWDATA_DIR environment
+    # variable. So we set that here.
+    os.environ['CBTF_RAWDATA_DIR'] = rawdata_dir
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(description='Survey tool for collecting measurements')
+    parser.add_argument('script', help='')
+    parser.add_argument('--counters', help='Specify counters to collect')
+    return parser.parse_args()
+
+def is_mpi_exe(exe):
+    """ Checks if the executable is linked with libmpi """
+    command = ['ldd', exe]
+    ldd_out = subprocess.check_output(command)
+    return '/libmpi' in ldd_out
+
+def is_openmp_exe(exe):
+    """ Checks if the executable is linked with openmp """
+    command = ['ldd', exe]
+    ldd_out = subprocess.check_output(command)
+    return any(x in ldd_out for x in ['/libiomp5', '/libgomp'])
+
+def is_executable(file_name):
+    """ Checks if the file is an executable """
+    return os.access(file_name, os.X_OK)
+
+def find_executable(command):
+    """ Locates the executable in the argument passed in by the user
+    Args:
+        command: Command string passed in by the user
+    """
+    command_list = command.split()
+    command_list.reverse()
+    for x in command_list:
+        if is_executable(x):
+            return x
+    return None
+
+def create_csv_dir_name(exe_name):
+    """ Determines the csv directory name based on the exec name """
+    prefix = os.path.basename(exe_name) + '-survey'
+    csv_dir = os.environ.get('CBTF_CSVDATA_DIR')
+    if csv_dir == None:
+        csv_dir = os.getcwd()
+    for i in range(1000):
+        temp_name = csv_dir + '/' + prefix + '-csvdata-' + str(i)
+        if not os.path.isdir(temp_name):
+            return temp_name
+    print('Error: Too many csv directories exist!')
+    exit(1)
+
+#### Actual script #### 
+args = parse_args()
+if args.counters:
+    os.environ['CBTF_SUMMARY_HWC_EVENTS'] = args.counters
+    os.environ['OVERVIEW_HWC_EVENTS'] = args.counters
+    print('[overview]: summary collector using user specified ' +
+          'counters: ' + args.counters)
+else:
+    print('[overview]: summary collector using defaults.')
+os.environ['CBTF_SHOW_METRIC_EVENTS'] = '1'
+
+exe = find_executable(args.script)
+if exe == None:
+    print('Could not find executable')
+    exit(1)
+
+csv_dir_name = create_csv_dir_name(exe)
+os.environ['CBTF_CSVDATA_DIR'] = csv_dir_name
+command_list = args.script.split()
+
+if is_mpi_exe(exe):
+    exe_index = command_list.index(exe)
+    command = command_list[:exe_index]
+    command += ['cbtfrun', '--collector', 'overview', '--mpi', '--fileio']
+    if is_openmp_exe(exe):
+        command.append('--openmp')
+    command += command_list[exe_index:]
+else:
+    command = ['cbtfrun', '--collector', 'overview', '--fileio']
+    if is_openmp_exe(exe):
+        command.append('--openmp')
+    command += command_list
+   
+process = subprocess.Popen(command, stdout=subprocess.PIPE)
+
+# We run a loop in order to grab the output line-by-line so we can print
+# it to standard out immediately instead of waiting until the program
+# is completed
+while True:
+    output = process.stdout.readline()
+    if not output and process.poll() is not None:
+        break
+    if output:
+        print(output.strip())
+
+subprocess.call(['cbtfprocesscsv', csv_dir_name])
+print('Creating csv report in ' + csv_dir_name + '-report.txt')
+shutil.rmtree(csv_dir_name)
