@@ -6,9 +6,10 @@ import glob
 import subprocess
 import shutil
 
+
 def setup_offline():
     # According to OSS documentation the published method to set and alternative
-    # location for rawdata files (eg. for lustre) is via OPENSS_RAWDATA_DIR.
+    # location for raw data files (eg. for lustre) is via OPENSS_RAWDATA_DIR.
     # Therefore we honor that naming convention and convert as needed to
     # CBTF_RAWDATA_DIR for the internal implementation used in cbtf-krell code.
     #
@@ -19,16 +20,16 @@ def setup_offline():
     rawdata_dir = os.environ.get('OPENSS_RAWDATA_DIR')
     user = os.environ.get('USER')
     if not rawdata_dir:
-        rawdata_dir = '/tmp/' + user + '/offline-cbtf' 
+        rawdata_dir = '/tmp/' + user + '/offline-cbtf'
         os.environ['OPENSS_RAWDATA_DIR'] = rawdata_dir
     if not os.path.exists(rawdata_dir):
-        os.mkdir(rawdata_dir) 
+        os.mkdir(rawdata_dir)
 
     # For safety we cd to the raw directory and only remove the sub-directories
     # each collector creates for the rawddata files.
-    # For the cbtf-krell offline collectors, we likely do no need the extra level
-    # of one directory per process/thread since we write only one file now with
-    # the naming convention: exe_name-pid-posix_tid.openss-data
+    # For the cbtf-krell offline collectors, we likely do no need the extra
+    # level of one directory per process/thread since we write only one file now
+    # with the naming convention: exe_name-pid-posix_tid.openss-data
     #
     for f in glob.glob(rawdata_dir + '/cbtf-rawdata*'):
         os.remove(f)
@@ -39,44 +40,50 @@ def setup_offline():
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='Survey tool for collecting measurements')
+    parser = argparse.ArgumentParser(
+        description='Survey tool for collecting measurements')
     parser.add_argument('script', help='')
     parser.add_argument('--counters', help='Specify counters to collect')
     return parser.parse_args()
 
-def is_mpi_exe(exe):
+
+def is_mpi_exe(exe_name):
     """ Checks if the executable is linked with libmpi """
-    command = ['ldd', exe]
-    ldd_out = subprocess.check_output(command)
+    cmd = ['ldd', exe_name]
+    ldd_out = subprocess.check_output(cmd)
     return '/libmpi' in ldd_out
 
-def is_openmp_exe(exe):
+
+def is_openmp_exe(exe_name):
     """ Checks if the executable is linked with openmp """
-    command = ['ldd', exe]
-    ldd_out = subprocess.check_output(command)
+    cmd = ['ldd', exe_name]
+    ldd_out = subprocess.check_output(cmd)
     return any(x in ldd_out for x in ['/libiomp5', '/libgomp'])
+
 
 def is_executable(file_name):
     """ Checks if the file is an executable """
     return os.access(file_name, os.X_OK)
 
-def find_executable(command):
+
+def find_executable(cmd):
     """ Locates the executable in the argument passed in by the user
     Args:
-        command: Command string passed in by the user
+        cmd: Command string passed in by the user
     """
-    command_list = command.split()
-    command_list.reverse()
-    for x in command_list:
+    cmd_list = cmd.split()
+    cmd_list.reverse()
+    for x in cmd_list:
         if is_executable(x):
             return x
     return None
+
 
 def create_csv_dir_name(exe_name):
     """ Determines the csv directory name based on the exec name """
     prefix = os.path.basename(exe_name) + '-survey'
     csv_dir = os.environ.get('CBTF_CSVDATA_DIR')
-    if csv_dir == None:
+    if csv_dir is None:
         csv_dir = os.getcwd()
     for i in range(1000):
         temp_name = csv_dir + '/' + prefix + '-csvdata-' + str(i)
@@ -85,7 +92,8 @@ def create_csv_dir_name(exe_name):
     print('Error: Too many csv directories exist!')
     exit(1)
 
-#### Actual script #### 
+
+# Actual script #
 args = parse_args()
 if args.counters:
     os.environ['CBTF_SUMMARY_HWC_EVENTS'] = args.counters
@@ -97,7 +105,7 @@ else:
 os.environ['CBTF_SHOW_METRIC_EVENTS'] = '1'
 
 exe = find_executable(args.script)
-if exe == None:
+if exe is None:
     print('Could not find executable')
     exit(1)
 
@@ -117,7 +125,7 @@ else:
     if is_openmp_exe(exe):
         command.append('--openmp')
     command += command_list
-   
+
 process = subprocess.Popen(command, stdout=subprocess.PIPE)
 
 # We run a loop in order to grab the output line-by-line so we can print

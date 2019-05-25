@@ -5,7 +5,15 @@ import glob
 import copy
 
 
-class CSV_Record:
+def parse_str(s):
+    try:
+        # maybe convert int to long here?
+        return ast.literal_eval(str(s))
+    except ValueError:
+        return s
+
+
+class CsvRecord:
     """Stores summary data for cbtf csv data
 
     Attributes:
@@ -15,6 +23,7 @@ class CSV_Record:
         thread_data (Dict): Summary of csv data for each thread 
 
     """
+
     def __init__(self, data_dirname):
         self.data_dirname = data_dirname
         self.thread_list = []
@@ -24,7 +33,6 @@ class CSV_Record:
         self.__build_thread_list()
         self.__process_all_threads()
 
-
     def calculate_max_time(self):
         """Calculates the max time of the app by checking max of each thread
 
@@ -32,9 +40,9 @@ class CSV_Record:
             float: Max thread time of the application
     
         """
-        max_times = [t[0]['SUMMARY'][0]['total_time_seconds'] for t in self.thread_data.values()]
+        max_times = [t[0]['SUMMARY'][0]['total_time_seconds'] for t in
+                     self.thread_data.values()]
         return max(max_times)
-
 
     def __build_thread_list(self):
         """Compute a thread_list used to generate metrics per thread
@@ -54,19 +62,17 @@ class CSV_Record:
         """
 
         csv_file_cnt = len(glob.glob(self.data_dirname + '/*/*.csv'))
-        thread_file_cnt = -1
         file_cnt = 0
-        while True :
-           s = '/*/*-' + str(self.thread_cnt) + '.csv'
-           files = glob.glob(self.data_dirname + s)
-           thread_file_cnt = len(files)
-           if thread_file_cnt > 0:
+        while True:
+            s = '/*/*-' + str(self.thread_cnt) + '.csv'
+            files = glob.glob(self.data_dirname + s)
+            thread_file_cnt = len(files)
+            if thread_file_cnt > 0:
                 file_cnt += thread_file_cnt
                 self.thread_list.append(self.thread_cnt)
-           if file_cnt == csv_file_cnt:
-              break
-           self.thread_cnt += 1
-
+            if file_cnt == csv_file_cnt:
+                break
+            self.thread_cnt += 1
 
     def __process_all_threads(self):
         """Process all threads and ranks in the csv directory
@@ -75,7 +81,6 @@ class CSV_Record:
         for t in self.thread_list:
             self.thread_data[t] = self.__process_csv_directory(t)
 
- 
     def __process_csv_directory(self, t):
         max_data = None
         min_data = None
@@ -86,63 +91,57 @@ class CSV_Record:
         for f in thread_files:
             data = self.__process_csv_file(f)
             count += 1
-            #print ("FILE:" + str(f) + " count:" + str(count))
-            #print ("DATA:" + str(data))
+            # print ("FILE:" + str(f) + " count:" + str(count))
+            # print ("DATA:" + str(data))
             if not max_data:
                 # copy initial data dict from first file.
                 max_data = copy.deepcopy(data)
                 min_data = copy.deepcopy(data)
                 sum_data = copy.deepcopy(data)
                 continue
-    
+
             # there may be cases where a thread has gathered data
             # that may not be found in other threads. These tables
             # represent activity across all items in a particular
             # thread across all ranks.
-            for key, value in data.iteritems():
-                if not key in max_data:
-                    max_data[key] = num(value)
-                if not key in min_data:
-                    min_data[key] = num(value)
-                if not key in sum_data:
-                    sum_data[key] = num(value)
-    
+            for key, value in data.items():
+                if key not in max_data:
+                    max_data[key] = parse_str(value)
+                if key not in min_data:
+                    min_data[key] = parse_str(value)
+                if key not in sum_data:
+                    sum_data[key] = parse_str(value)
+
             # handle sum of incoming values. later used to compute average
             # values based on rank and/or thread counts.
-            for i,isum, in zip(data.iteritems(),sum_data.iteritems()):
-                # use incoming data to index subitem data for sum  by item lookup.
+            for i, isum, in zip(data.items(), sum_data.items()):
+                # use incoming data to index subitem data for sum by item lookup
                 sumitem = sum_data.get(i[0])
                 dataitem = data.get(i[0])
-                for r,rsum in zip(dataitem,sumitem):
-                    for irsum in rsum.iteritems():
+                for r, rsum in zip(dataitem, sumitem):
+                    for irsum in rsum.items():
                         # iterate on the current entries in sum_data.
                         # if the incoming csv does not have this item
                         # then we skip updating the sum.
                         val = r.get(irsum[0])
-                        if val != None:
-                            rsum.update({ irsum[0]: r.get(irsum[0]) + rsum.get(irsum[0]) })
-    
+                        if val is not None:
+                            rsum.update({irsum[0]: r.get(irsum[0]) + rsum.get(
+                                irsum[0])})
+
             # handle max and min recording of incoming values.
-            for i,imin,imax, in zip(data.iteritems(),min_data.iteritems(),max_data.iteritems()):
-                # use incoming data to index sub data for max and min  by item lookup.
+            for i, imin, imax, in zip(data.items(), min_data.items(),
+                                      max_data.items()):
+                # use incoming data to index sub data for max and min by item
+                # lookup.
                 maxitem = max_data.get(i[0])
                 minitem = min_data.get(i[0])
                 dataitem = data.get(i[0])
-                for r,rmin,rmax in zip(dataitem,minitem,maxitem):
-                    for ir in r.iteritems():
-                        rmax.update({ ir[0]: max(r.get(ir[0]), rmax.get(ir[0])) })
-                        rmin.update({ ir[0]: min(r.get(ir[0]), rmin.get(ir[0])) })
+                for r, rmin, rmax in zip(dataitem, minitem, maxitem):
+                    for ir in r.items():
+                        rmax.update({ir[0]: max(r.get(ir[0]), rmax.get(ir[0]))})
+                        rmin.update({ir[0]: min(r.get(ir[0]), rmin.get(ir[0]))})
         return [max_data, min_data, sum_data, count]
 
-
-    def __parse_str(self, s):
-        try:
-    	# maybe convert int to long here?
-            return ast.literal_eval(str(s))
-        except:
-            return s
-   
- 
     def __process_csv_file(self, filename):
         category = ""
         cat_num = 0
@@ -150,8 +149,10 @@ class CSV_Record:
         toggle = None
         record_data = {}
         table = []
+
         def make_record():
             return [dict(zip(header, x)) for x in table]
+
         with open(filename, 'rU') as csv_data:
             reader = csv.reader(csv_data)
             for row in reader:
@@ -193,10 +194,10 @@ class CSV_Record:
                             # unknown data. Should always check this.
                             category = "DATA" + str(cat_num)
                     table = []
-                    cat_num = cat_num+1
+                    cat_num = cat_num + 1
                     toggle = True
                 else:
-                    table.append([self.__parse_str(x.strip()) for x in row])
+                    table.append([parse_str(x.strip()) for x in row])
                     if category == 'SUMMARY':
                         for i, item in enumerate(header):
                             if header[i] in self.summary_data:

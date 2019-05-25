@@ -1,0 +1,12 @@
+from setuptools import setup
+
+setup(
+    name='cbtf-krell',
+    version='${PACKAGE_VERSION}'
+    package_dir={'': '${CMAKE_CURRENT_SOURCE_DIR}'},
+    packages=['pycbtf'],
+    package_data={'pycbtf':['data/papi.txt', 'data/formulas.txt']},
+    scripts=['${CMAKE_CURRENT_SOURCE_DIR}/survey', '${CMAKE_CURRENT_SOURCE_DIR}/cbtfextract'],
+    license='GPL-2.0',
+    description='Python scripts of the cbtf-krell project'
+)
